@@ -1,0 +1,15 @@
+{
+  "short_name": "eSentire ChatGPT",
+  "name": "eSentire ChatGPT",
+  "icons": [   
+    {
+      "src": "esentire_logo_400x400.png",
+      "type": "image/png",
+      "sizes": "400x400"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}

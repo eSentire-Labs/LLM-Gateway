@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Dark */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 10px;
+    }
+  
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background-color: #525252;
+
+      border-radius: 5px;
+    }
+  
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #3a3a3a;
+        border-radius: 5px;
+    }
+  
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background-color: #353535;
+    }
+    /* Light */
+    .custom-scrollbar-light::-webkit-scrollbar {
+      width: 8px;
+    }
+  
+    .custom-scrollbar-light::-webkit-scrollbar-track {
+        background-color: #c4c4c4;
+
+      border-radius: 5px;
+    }
+  
+    .custom-scrollbar-light::-webkit-scrollbar-thumb {
+        background-color: #585858;
+        border-radius: 5px;
+    }
+  
+    .custom-scrollbar-light::-webkit-scrollbar-thumb:hover {
+      background-color: #353535;
+    }
+  }
+  
+  @keyframes spinner {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .tooltip {
+    position: relative;
+    cursor: pointer;
+  }
+  
+  .tooltip:hover .tooltip-content {
+    display: block;
+  }
+  
+  .tooltip-content {
+    display: none;
+    position: absolute;
+    z-index: 999999;
+    min-width: 200px;
+    background-color: #374151;
+    color: #ffffff;
+    text-align: center;
+    border-radius: 4px;
+    padding: 4px 8px;
+    top: 50%; /* Change this to center the tooltip vertically */
+    left: 100%; /* Change this to position the tooltip to the right of the parent */
+    transform: translate(24px, -50%); /* Add a slight horizontal offset for spacing and adjust the vertical alignment */
+    white-space: nowrap;
+    font-size: 14px;
+  }
+  
+  .side-bar-content-container {
+    position: absolute;
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 300ms, transform 300ms;
+    right: 1.5rem;
+    left: 1.5rem;
+  }
+  
+  .side-bar-content-container.fade-out {
+    opacity: 0;
+    transform: translateX(-50%);
+  }
+  
+  .side-bar-content-container.slide-in {
+    opacity: 0;
+    transform: translateX(-100%);
+    transition: opacity 300ms, transform 300ms;
+  }
+  
+  .history_height{
+    height: 40rem;
+  }
+
+  .width_98_percent{
+    width: 98%;
+  }
