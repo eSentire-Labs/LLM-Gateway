@@ -19,9 +19,9 @@
 
 ## LLM Gateway Framework
 
-As the LLM landscape evolves and increasingly creeps into our lives, businesses will need tools to help monitor and mitigate vulnerabilies these new technologies introduce. 
+As the LLM landscape evolves and increasingly creeps into our lives, businesses will need tools to help monitor and mitigate vulnerabilities these new technologies introduce. 
 
-This repo contains sample code of how other businesses could implement their own LLM Gateway Framework to monitor and manage this risks.
+This repo contains sample code of how other businesses could implement their own LLM Gateway Framework to monitor and manage these risks.
 
 The image below demonstrates an example of how this framework could look.
 
@@ -111,7 +111,7 @@ The server is located at [./frontend/src/deployment_server/server.js](/frontend/
 
 The react app is located at [./frontend/src/src/App.js](/frontend/src/src/App.js)
 
-Only run the front end only if you have another llm gateway proxy configured already. Otherewise, the chat app will be pointing at a non existant proxy url and will not work.
+Only run the front end only if you have another llm gateway proxy configured already. Otherwise, the chat app will be pointing at a non-existent proxy url and will not work.
 
 Alternately, you could configure LLM_GATEWAY_URL to point to an existing public LLM endpoint, such as ```https://api.openai.com/v1/chat/completions```, then uncomment the token fields in the UI and allow users to pass public LLM tokens directly through the UI. 
 
