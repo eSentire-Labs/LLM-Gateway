@@ -16,7 +16,7 @@ services:
       - LLM_API_CONTENT_TYPE=application/json
       - LLM_ENDPOINT=https://api.openai.com/v1/chat/completions # LLM endpoint you want to proxy to
       - LLM_IMG_ENDPOINT=https://api.openai.com/v1/images/generations # Another llm endpoint you want to proxy to
-      - LLM_API_AUTHORIZATION=[LLM TOKEN/API KEY HERE. E,g. sk-asda...]
+      - LLM_API_AUTHORIZATION=Bearer [LLM TOKEN/API KEY HERE. E,g. Bearer sk-asda...]
       - ENABLE_SUBMISSIONS_API=false # True of an API is enabled to send logs to eSentire
       - SUBMISSIONS_API_URL=[SUBMISSIONS URL PROVIDED IF CONFIGURED] # The URL provided by eSentire if llm log submissions is enabled
     networks:
