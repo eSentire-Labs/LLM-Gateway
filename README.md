@@ -134,6 +134,10 @@ Alternately, you could configure LLM_GATEWAY_URL to point to an existing public 
 4. Take down the docker-compose: ``` docker-compose down ```
 ---
 
+### Configure the Full Stack gateway and client to hit an Amazon Sagemaker Endpoint, exposed through AWS API
+See [./tutorials/sagemaker/README.md](/tutorials/sagemaker/README.md)
+
+---
 ## Load a Sample Power BI Report
 
 ![alt text](./example-powerbi-report/image.png)
