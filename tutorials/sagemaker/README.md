@@ -88,7 +88,15 @@ def lambda_handler(event, context):
     }
 ```
 
-5. Add an AWS API Gateway as a lambda trigger. Select the following configuration parameters:
+5. Add the an environment variable "ENDPOINT_NAME" with a value of the endpoint name saved in step 4 of [Configure Sagemaker Endpoint](#configure-sagemaker-endpoint):
+
+<img src="./imgs/lambda-env-var-1.png"  width="500"/> 
+
+<img src="./imgs/lambda-env-var-2.png"  width="500"/> 
+
+<img src="./imgs/lambda-env-var-3.png"  width="500"/> 
+
+6. Add an AWS API Gateway as a lambda trigger. Select the following configuration parameters:
     - Create a new API
     - HTTP API
     - Open (However, make sure to secure your APIs before deploying to prod)
@@ -97,15 +105,15 @@ def lambda_handler(event, context):
 
 <img src="./imgs/api-trigger-config.png"  width="500"/> 
 
-6. AWS API gateway times out after 29 seconds (https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html). To maximize the time the lambda and api gateway allocate sagemaker to respond, modify the lambda timeout field to 30 seconds, under ```General configuration```->```Edit``` -> ```Timeout```. 
+7. AWS API gateway times out after 29 seconds (https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html). To maximize the time the lambda and api gateway allocate sagemaker to respond, modify the lambda timeout field to 30 seconds, under ```General configuration```->```Edit``` -> ```Timeout```. 
 
 <img src="./imgs/modify-lambda-timeout.png"  width="500"/> 
 
-7. Retrieve your API url by going to ```configuration``` -> ```trigger ```
+8. Retrieve your API url by going to ```configuration``` -> ```trigger ```
 
 <img src="./imgs/retrieve-api-url.jpeg"  width="500"/>
 
-8. Test your API Gateway by calling the API endpoint with the following request body:
+9. Test your API Gateway by calling the API endpoint with the following request body:
 
 <img src="./imgs/postman-test.png"  width="500"/> 
 
