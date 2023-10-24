@@ -295,13 +295,14 @@ async def submit_title_update_openai_experimental(
             continue
         break
     try:
-        chat_log =  db_engine.query(ChatgptLog.request) \
+        chat_log = (
+            db_engine.query(ChatgptLog.request)
             .filter(
                 ChatgptLog.root_gpt_id == json_object["root_id"],
-            ) \
-            .order_by(ChatgptLog.response_time.desc()) \
+            )
+            .order_by(ChatgptLog.response_time.desc())
             .first()
-    
+        )
 
         if chat_log == None:
             raise Exception("No records found for this root_gpt_id.")
