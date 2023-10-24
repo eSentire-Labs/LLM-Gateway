@@ -523,14 +523,14 @@ async def check_history(
     
     try:
         chat_log = (
-            db_engine.query(ChatgptLog.request, ChatgptLog.response_time)
-            .distinct()
-            .filter(
+            db_engine.query(
+                ChatgptLog
+            ).filter(
                 ChatgptLog.user_name == "user",
                 ChatgptLog.title == "title",
             )
-            .order_by(ChatgptLog.response_time.desc())
-            .all()
+            .order_by(ChatgptLog.response_time.desc()
+            ).all()
         )
 
         # Return the generated text as a response to the client
