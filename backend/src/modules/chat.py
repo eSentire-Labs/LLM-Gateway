@@ -306,10 +306,7 @@ async def submit_title_update_openai_experimental(
         if chat_log == None:
             raise Exception("No records found for this root_gpt_id.")
                 
-        logger.info("chat_log %s:", chat_log)
-
-        chat_log_json = json.loads(chat_log)
-    
+        logger.info("chat_log: %s", chat_log)
 
         user_messages = []
         for message in chat_log_json["messages"]:
