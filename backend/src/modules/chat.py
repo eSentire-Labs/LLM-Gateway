@@ -179,7 +179,7 @@ async def submit_chat_check(
         chat_log = ( 
             db_engine.query(ChatgptLog)
             .filter(
-                ChatgptLog.id == json.dumps(json_object),
+                ChatgptLog.request == json.dumps(json_object),
                 ChatgptLog.response_time
                 >= current_time - datetime.timedelta(minutes=15),
             )
