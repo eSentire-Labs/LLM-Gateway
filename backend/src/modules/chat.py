@@ -566,19 +566,20 @@ async def check_history_v2(
     """
     
     try:
-        chat_log = db_engine.execute(
-            #Make sure to replace user_name and title vars containing actual user name and title
-            f"""SELECT DISTINCT ON (root_gpt_id) *\
-                                FROM "llm_logs".chatgpt_logs\
-                                and user_name = user\ 
-                                and title = title\
-                                and root_gpt_id IS NOT NULL\
-                                and convo_show = {True}\
-                                ORDER BY root_gpt_id, response_time DESC;"""
-        ).fetchall()
-
+        query = db_engine.query(
+                        ChatgptLog
+                    ).filter(
+                        ChatgptLog.user_name == 'user',
+                        ChatgptLog.root_gpt_id.isnot(None),
+                        ChatgptLog.convo_show == True
+                    ).order_by(
+                        ChatgptLog.root_gpt_id,
+                        ChatgptLog.response_time.desc()
+                    ).distinct(
+                        ChatgptLog.root_gpt_id)
+        #Make sure to replace user_name and title vars containing actual user name and title
+        chat_log = query.all()
         logger.info("chat log complete")
-
         # Return the generated text as a response to the client
         return {"Historical_Conversations": chat_log}
 
