@@ -309,7 +309,8 @@ async def submit_title_update_openai_experimental(
         logger.info("chat_log: %s", chat_log)
 
         user_messages = []
-        for message in chat_log_json["messages"]:
+        chat_log_dict = json.loads(chat_log[0])
+        for message in chat_log_dict["messages"]:
             if message["role"] == "user":
                 user_messages.append(message["content"])
         prompt = {
