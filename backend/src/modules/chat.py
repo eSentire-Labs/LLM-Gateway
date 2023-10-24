@@ -97,6 +97,9 @@ async def submit_chat(
         response_json = response.json()
         response_json.update({"uuid": str(uuid_generated)})
 
+        if gpt_root_id == None:
+            gpt_root_id = response_json.get('id')
+
         chat_log = ChatgptLog(
             id=uuid_generated,
             request=json.dumps(json_object),
