@@ -103,7 +103,7 @@ async def submit_chat(
             response=json.dumps(response.json()),
             usage_info=json.dumps(response.json()["usage"]),
             user_name = "user", # Replace with the actual username of whomever sent the request using whichever IAM tools you prefer
-            title = "tile", # Replace with title-- this is an example of additional metadata that might be useful to capture, or to use in your dashboards to create interesting job role based reports
+            title = "title", # Replace with title-- this is an example of additional metadata that might be useful to capture, or to use in your dashboards to create interesting job role based reports
             convo_title=convo_title, # This is used in the chat history feature so users can quickly get an idea of prior conversation content
             root_gpt_id= gpt_root_id # This is used to draw a lineage between different interactions so we can trace a single conversation
         )
