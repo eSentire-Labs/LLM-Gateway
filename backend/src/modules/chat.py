@@ -97,13 +97,16 @@ async def submit_chat(
         response_json = response.json()
         response_json.update({"uuid": str(uuid_generated)})
 
+        if gpt_root_id == None:
+            gpt_root_id = response_json.get('id')
+
         chat_log = ChatgptLog(
             id=uuid_generated,
             request=json.dumps(json_object),
             response=json.dumps(response.json()),
             usage_info=json.dumps(response.json()["usage"]),
             user_name = "user", # Replace with the actual username of whomever sent the request using whichever IAM tools you prefer
-            title = "tile", # Replace with title-- this is an example of additional metadata that might be useful to capture, or to use in your dashboards to create interesting job role based reports
+            title = "title", # Replace with title-- this is an example of additional metadata that might be useful to capture, or to use in your dashboards to create interesting job role based reports
             convo_title=convo_title, # This is used in the chat history feature so users can quickly get an idea of prior conversation content
             root_gpt_id= gpt_root_id # This is used to draw a lineage between different interactions so we can trace a single conversation
         )
@@ -179,7 +182,7 @@ async def submit_chat_check(
         chat_log = ( 
             db_engine.query(ChatgptLog)
             .filter(
-                ChatgptLog.id == json.dumps(json_object),
+                ChatgptLog.request == json.dumps(json_object),
                 ChatgptLog.response_time
                 >= current_time - datetime.timedelta(minutes=15),
             )
@@ -295,24 +298,23 @@ async def submit_title_update_openai_experimental(
             continue
         break
     try:
-        chat_log =  db_engine.query(ChatgptLog.request) \
+        chat_log = (
+            db_engine.query(ChatgptLog.request)
             .filter(
                 ChatgptLog.root_gpt_id == json_object["root_id"],
-            ) \
-            .order_by(ChatgptLog.response_time.desc()) \
+            )
+            .order_by(ChatgptLog.response_time.desc())
             .first()
-    
+        )
 
         if chat_log == None:
             raise Exception("No records found for this root_gpt_id.")
                 
-        logger.info("chat_log %s:", chat_log)
-
-        chat_log_json = json.loads(chat_log)
-    
+        logger.info("chat_log: %s", chat_log)
 
         user_messages = []
-        for message in chat_log_json["messages"]:
+        chat_log_dict = json.loads(chat_log[0])
+        for message in chat_log_dict["messages"]:
             if message["role"] == "user":
                 user_messages.append(message["content"])
         prompt = {
@@ -521,14 +523,14 @@ async def check_history(
     
     try:
         chat_log = (
-            db_engine.query(ChatgptLog.request, ChatgptLog.response_time)
-            .distinct()
-            .filter(
+            db_engine.query(
+                ChatgptLog
+            ).filter(
                 ChatgptLog.user_name == "user",
                 ChatgptLog.title == "title",
             )
-            .order_by(ChatgptLog.response_time.desc())
-            .all()
+            .order_by(ChatgptLog.response_time.desc()
+            ).all()
         )
 
         # Return the generated text as a response to the client
@@ -567,19 +569,20 @@ async def check_history_v2(
     """
     
     try:
-        chat_log = db_engine.execute(
-            #Make sure to replace user_name and title vars containing actual user name and title
-            f"""SELECT DISTINCT ON (root_gpt_id) *\
-                                FROM "llm_logs".chatgpt_logs\
-                                and user_name = user\ 
-                                and title = title\
-                                and root_gpt_id IS NOT NULL\
-                                and convo_show = {True}\
-                                ORDER BY root_gpt_id, response_time DESC;"""
-        ).fetchall()
-
+        query = db_engine.query(
+                        ChatgptLog
+                    ).filter(
+                        ChatgptLog.user_name == 'user',
+                        ChatgptLog.root_gpt_id.isnot(None),
+                        ChatgptLog.convo_show == True
+                    ).order_by(
+                        ChatgptLog.root_gpt_id,
+                        ChatgptLog.response_time.desc()
+                    ).distinct(
+                        ChatgptLog.root_gpt_id)
+        #Make sure to replace user_name and title vars containing actual user name and title
+        chat_log = query.all()
         logger.info("chat log complete")
-
         # Return the generated text as a response to the client
         return {"Historical_Conversations": chat_log}
 
