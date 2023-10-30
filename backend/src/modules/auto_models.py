@@ -11,6 +11,7 @@ from sqlalchemy import (
     text,
     Float,
     String,
+    Boolean,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
@@ -42,7 +43,7 @@ class ChatgptLog(Base):
     title = Column(Text) # user metadata: user job title
     response_time = Column(DateTime, server_default=text("now()"))
     convo_title = Column(String)
-    convo_show = Column(String, server_default="True")
+    convo_show = Column(Boolean, server_default=text("true"))
     root_gpt_id = Column(Text)
 
 class MetaSummarizerLog(Base):
