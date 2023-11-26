@@ -42,7 +42,7 @@ services:
             credentials_network:
                 ipv4_address: "169.254.170.3"
         environment:
-          AWS_DEFAULT_REGION: us-east-1 # Modify with your US Region Here Where your Bedrock Endpoint is deployed
+          AWS_DEFAULT_REGION: us-east-1 # Mdify with your US Region Here Where your Bedrock Endpoint is deployed
           # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-iam-roles.html
-          AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: "/creds" # Modify this with the role needed to access bedrock apis
+          AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: "/creds" # "/creds" # Modify this with the role needed to access bedrock apis
     
