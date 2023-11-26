@@ -12,7 +12,11 @@ If you already have an endpoint and just need guidance on modifying the LLM-Gatw
 <img src="./imgs/setup-sagemaker-domain.png"  width="500"/> 
 
 
-2. Select a model from Sagemaker Studio Jumpstart.
+2. Select a model from Sagemaker Studio Jumpstart. 
+
+	:star: To follow along this tutorial with no issues, make sure to select the "Llama-2-7b-chat" model by Meta. 
+
+	If you select a different model, you may need to modify both the frontend and backend code to pass the correct parameters and to parse the response accordingly.
 
 <img src="./imgs/sagemaker-studio-jumpstart.png"  width="500"/>
 
@@ -153,17 +157,12 @@ Ok, great. Now that we know we have a working API to the sagemaker llm, we need 
 
 Remember, this is just a quick proof of concept to get you running, and requires much more work before it's ready for a production product.
 
-1. Take each of the code files in ```tutorials/sagemaker/backend``` and ```tutorials/sagemaker/frontend```, and replace the corresponding files in the respective ```backend/``` and ```frontend/``` folders.
-
-Specifically, make sure to copy and replace the following:
-
-| Replace this file | With this sagemaker modified codebase |
-|-------------------|---------------------------------------|
-|[./frontend/src/src/components/Sidebar.js](/frontend/src/src/components/Sidebar.js)|[./tutorials/sagemaker/frontend/src/src/components/Sidebar.js](/tutorials/sagemaker/frontend/src/src/components/Sidebar.js)|
-|[./frontend/src/src/App.js](/frontend/src/src/App.js)|[./tutorials/sagemaker/frontend/src/src/App.js](/tutorials/sagemaker/frontend/src/src/App.js)|
-|[./backend/src/modules/chat.py](/backend/src/modules/chat.py)|[./tutorials/sagemaker/backend/src/modules/chat.py](/tutorials/sagemaker/backend/src/modules/chat.py)|
-|[./backend/src/modules/classes.py](/backend/src/modules/classes.py)|[./tutorials/sagemaker/backend/src/modules/classes.py](/tutorials/sagemaker/backend/src/modules/classes.py)|
-|[./docker-compose.yml](/docker-compose.yml)|[./tutorials/sagemaker/docker-compose.yml](/docker-compose.yml)|
+In [./docker-compose.yml](/docker-compose.yml), update the following environment variables:
+| Environment Variable | Value |
+| -------------------- | ----- |
+| LLM_ENDPOINT (api service) | Replace with the API URL in step 8.|
+| LLM_TYPE (api service ) | Make sure this array includes at least SAGEMAKER. For Example, [OPENAI, SAGEMAKER] if you wish for the backend fast api docs to include endpoints to hit OPEN AI And SAGEMAKER |
+| LLM_TYPE (frontend service) | Make sure this is set to "SAGEMAKER". This configures the frontend chat app to format and parse api calls correctly for the Sagemaker Llama-2-7b-chat model. |
 
 And voila! Now follow the ```Full Stack``` instructions in [./README.md](/README.md) to kick up the llm client.
 
