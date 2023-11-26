@@ -59,6 +59,78 @@ app.post('/chat', async (req, res) => {
   }
 })
 
+//chat endpoint for interacting with the API_URL
+app.post('/chat_br', async (req, res) => {
+  try {
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    const response = await axios.post(
+      API_URL.concat("/chat_br"),
+      req.body,
+      {
+        headers,
+        timeout: 30 * 1000 //30 milisecond 
+      }
+    );
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    console.log("Error Outputs")
+    console.log(error)
+    if (error.response) {
+      console.log("error.response")
+      res.status(error.response.status).json(error.response.data);
+    } else if (error.request) {
+      // The request was made but no response was received
+      // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+      // http.ClientRequest in node.js
+      console.log("error.request")
+      // Assume to be a timeout error        
+      res.status(504).json(error.message);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.log('Other Error')
+      res.status(500).json("Unhandled Error in Express");
+    }
+  }
+})
+
+//chat endpoint for interacting with the API_URL
+app.post('/chat_sg', async (req, res) => {
+  try {
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    const response = await axios.post(
+      API_URL.concat("/chat_sg"),
+      req.body,
+      {
+        headers,
+        timeout: 30 * 1000 //30 milisecond 
+      }
+    );
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    console.log("Error Outputs")
+    console.log(error)
+    if (error.response) {
+      console.log("error.response")
+      res.status(error.response.status).json(error.response.data);
+    } else if (error.request) {
+      // The request was made but no response was received
+      // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+      // http.ClientRequest in node.js
+      console.log("error.request")
+      // Assume to be a timeout error        
+      res.status(504).json(error.message);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.log('Other Error')
+      res.status(500).json("Unhandled Error in Express");
+    }
+  }
+})
+
 
 //chat endpoint for interacting with the API_URL
 app.post('/checkchat', async (req, res) => {

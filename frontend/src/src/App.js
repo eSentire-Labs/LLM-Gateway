@@ -1,3 +1,4 @@
+import Config from './Config';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import Message from './components/Message';
@@ -10,6 +11,8 @@ function App() {
   // Max number of times we will poll db for response
   // 60 * 10 sec = 600 sec = 10 min
   const MAX_TIMEOUT_RETRIES = 60
+  const LLM_TYPE = Config.LLM_TYPE 
+  const BEDROCK_MODEL_ID = Config.BEDROCK_MODEL_ID
 
   const [loading, setLoading] = useState(false)
   const [rows, setRows] = useState(1);
@@ -29,6 +32,25 @@ function App() {
   const [model, setModel] = useState('gpt-3.5-turbo')
   const [useCase, setUseCase] = useState('ChatGPT (default)')
   const [currentRootID, setCurrentRootID] = useState("string")
+  const [maxNewTokens, setMaxNewTokens] = useState(512)
+
+  //LLM service config var
+  const [endpoint, setEndpoint] = useState()
+
+  // On initial load, set the endpoint
+  useEffect(() => {
+    if (LLM_TYPE === "OPENAI") {
+      setEndpoint("/chat")
+    } else if (LLM_TYPE === "BEDROCK") {
+      setEndpoint("/chat_br")
+    } else if (LLM_TYPE === "SAGEMAKER") {
+      setEndpoint("/chat_sg")
+    } else {
+      setShowError(true)
+      setErrorMessage("LLM_TYPE is not configured. Please rebuild this app.")
+    }
+  }, []);
+
 
   // Refs
   const temperatureRef = useRef(temperature);
@@ -100,6 +122,7 @@ function App() {
       'Authorization': `${accessToken}`,
     };
 
+    // Need to restructure in case certain fields aren't set
     const data = {
       model: modelRef.current,
       messages: messagesRef.current, // Use Ref so this endpoint isn't called whenever messages is modified
@@ -210,31 +233,76 @@ function App() {
       'Content-Type': 'application/json',
       'Authorization': `${accessToken}`,
     };
-
-    const data = {
-      model: modelRef.current,
-      messages: messages,
-      temperature: Number(temperatureRef.current),
-      top_p: Number(topPRef.current),
-      presence_penalty: Number(presencePenaltyRef.current),
-      frequency_penalty: Number(frequencyPenaltyRef.current),
-      root_id: currentRootIDRef.current
+    let data;
+    if (LLM_TYPE === "OPENAI") {
+      data = {
+        model: modelRef.current,
+        messages: messages,
+        temperature: Number(temperatureRef.current),
+        top_p: Number(topPRef.current),
+        presence_penalty: Number(presencePenaltyRef.current),
+        frequency_penalty: Number(frequencyPenaltyRef.current),
+        root_id: currentRootIDRef.current
+      }
+    } else if (LLM_TYPE === "BEDROCK") {
+      data = {
+        modelId: BEDROCK_MODEL_ID,
+        prompt: messages[messages.length - 1].content,
+        // temperature: Number(temperatureRef.current),
+        // topP: Number(topPRef.current),
+        // presence_penalty: Number(presencePenaltyRef.current),
+        // frequency_penalty: Number(frequencyPenaltyRef.current),
+        root_id: currentRootIDRef.current
+      }
+    } else if (LLM_TYPE === "SAGEMAKER") {
+      data = {
+        inputs: messages,
+        parameters: {
+          temperature: Number(temperatureRef.current),
+          top_p: Number(topPRef.current),
+          // Set a default max token value of 512 tokens, otherwise will default to 20
+          max_new_tokens: Number(maxNewTokens)
+        }
+      }
     }
-
+    console.log("Elisasays Hi")
+    console.log(data)
+    console.log("curCount: ", curAttemptCount)
+    console.log("messages: ", messages)
     axios
-      .post('/chat', data, { headers })
+      .post(endpoint, data, { headers })
       .then((response) => {
         console.log(response)
+        var replyObj = {}
         if (messages.length === 2) {
           setCurrentRootID(response.data.id)
         }
-        const replyObj = response.data.choices[0].message
-        const msgObj = { content: replyObj.content, role: replyObj.role }
+        if (LLM_TYPE === "BEDROCK") {
+          replyObj = response.data.completions[0].data.text
+
+        } else if (LLM_TYPE === "OPENAI") {
+          
+          replyObj = response.data.choices[0].message
+          
+        } else if (LLM_TYPE === "SAGEMAKER") {
+          
+          replyObj = response.data[0].generation
+        }
+        console.log("ReplyOjb", replyObj)
+        var msgObj={}
+        if (LLM_TYPE === "BEDROCK") {
+          msgObj = { content: replyObj, role: 'assistant' }
+        } else {
+          // Both Open AI and Llama-2-7b sendback a role object
+          msgObj = { content: replyObj.content, role: replyObj.role }
+        }
         setMessages(prevState => [...prevState, msgObj])
+     
       })
       .catch((error) => {
         console.log(error)
         console.log("chat root_id: " + currentRootIDRef.current)
+        console.log("LLM_TYPE: " + LLM_TYPE)
         // The request was made and the server responded with a status code
         // that falls out of the range of 2xx
         if (error.response) {
