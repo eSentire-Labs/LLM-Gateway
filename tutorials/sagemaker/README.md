@@ -133,6 +133,20 @@ def lambda_handler(event, context):
 }
 ```
 
+---
+
+### <pre>:bulb: :star:  Debugging Tips :star: :bulb: </pre>
+
+If you encounter any errors, the lambda code might not be passing the required parameters correctly. Debug by visiting cloudWatch and looking at the log group logs for both your lambda and for the endpoint.
+
+<img src="./imgs/debug-422-error.png"  width="500"/> 
+
+1. Go to ```Cloudwatch```->```log groups```.
+2. Find the log group for your sagemaker endpoint. It should follow a naming convention of ```aws/sagemaker/Endpoints/[endpoint name]```
+3. Check it out!
+
+<img src="./imgs/find-sagemaker-endpoint-cloudwatch-log.jpeg"  width="500"/> 
+---
 
 ### LLM Gateway Configuration
 Ok, great. Now that we know we have a working API to the sagemaker llm, we need to modify our code so we can send and parse the http requests correctly.
@@ -154,14 +168,3 @@ Specifically, make sure to copy and replace the following:
 And voila! Now follow the ```Full Stack``` instructions in [./README.md](/README.md) to kick up the llm client.
 
 <img src="./imgs/sagemaker-adapted-chat-client.png"  width="500"/> 
-
-### Debugging AWS API
-If the API call isn't working, and you have no idea why, try following these instructions to figure out why:
-
-<img src="./imgs/debug-422-error.png"  width="500"/> 
-
-1. Go to ```Cloudwatch```->```log groups```.
-2. Find the log group for your sagemaker endpoint. It should follow a naming convention of ```aws/sagemaker/Endpoints/[endpoint name]```
-3. Check it out!
-
-<img src="./imgs/find-sagemaker-endpoint-cloudwatch-log.jpeg"  width="500"/> 
