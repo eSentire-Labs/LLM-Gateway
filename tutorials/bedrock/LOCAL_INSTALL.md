@@ -1,5 +1,8 @@
 ## Set Up a local instance of the Full Stack LLM Gateway with AWS Bedrock 
 
+Acknowledgements:
+This tutorial uses code shared in https://github.com/aws-samples/amazon-bedrock-workshop.
+
 ### AWS Prerequisites
 
 The following tutorial walks you through configuring the LLM-Gateway with an AWS Bedrock endpoint.
