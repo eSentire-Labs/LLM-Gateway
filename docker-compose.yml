@@ -10,15 +10,24 @@ services:
     volumes:
       - .:/app
     ports:
-      - 8008:8000
+      - 8000:8000
     environment:
+      # General Config
       - DATABASE_URL=postgresql://fastapi_traefik:fastapi_traefik@db:5432/fastapi_traefik
       - LLM_API_CONTENT_TYPE=application/json
+      # Open AI Config / Sagemaker URL
       - LLM_ENDPOINT=https://api.openai.com/v1/chat/completions # LLM endpoint you want to proxy to
       - LLM_IMG_ENDPOINT=https://api.openai.com/v1/images/generations # Another llm endpoint you want to proxy to
-      - LLM_API_AUTHORIZATION=Bearer [LLM TOKEN/API KEY HERE. E,g. Bearer sk-asda...]
+      - LLM_API_AUTHORIZATION=[LLM TOKEN/API KEY HERE. E,g. Bearer sk-asda...]
+      # Submissions Monitoring Config
       - ENABLE_SUBMISSIONS_API=false # True of an API is enabled to send logs to eSentire
       - SUBMISSIONS_API_URL=[SUBMISSIONS URL PROVIDED IF CONFIGURED] # The URL provided by eSentire if llm log submissions is enabled
+      # LLM Service Options
+      - LLM_TYPE=[BEDROCK, OPEN_AI, SAGEMAKER] # Pass a list of which llm services to use. Supported services in this repo include: [OPEN_AI, SAGEMAKER, BEDROCK]
+      # Bedrock Config
+      - BEDROCK_ASSUMED_ROLE=arn:aws:iam::{accountID}:role/{role name} # ARN of an AWS IAM role to assume for calling the Bedrock service.
+      - AWS_REGION=us-east-1 #  Optional name of the AWS Region in which the bedrock service is deployed (e.g. "us-east-1").
+      - MODEL_ID=ai21.j2-mid-v1 # Keep this model to follow the bedrock tutorial. https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
     networks:
       - llm-demo
     depends_on:
@@ -46,13 +55,20 @@ services:
       retries: 5
   frontend:
     container_name: llm-gateway-chat
-    build: ./frontend/
+    build: 
+      context: ./frontend/ 
+      args:
+        - LLM_TYPE=BEDROCK # Modify this to either one of OPEN_AI, SAGEMAKER, or BEDROCK to configure which backend api the frontend code should use to serve the chat client
+        - BEDROCK_MODEL_ID=ai21.j2-mid-v1 # Keep this model to follow the bedrock tutorial
     environment:
       - LLM_GATEWAY_URL=http://llm-gateway-api:8000 # Replace this with your internal LLM Gateway Proxy url. This default value is currently pointing to the backend api docker container
     networks: 
       - llm-demo
     ports:
       - 3000:3000
+    depends_on:
+      - api
+
 
 volumes:
   postgres_data:
