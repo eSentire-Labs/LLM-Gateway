@@ -10,8 +10,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, JSONResponse
 from sqlalchemy import DDL
 
-import src.modules.auto_models
-from src.modules.chat import chat_router
+from src.constants import  BEDROCK, LLM_TYPE, OPEN_AI, SAGEMAKER
+from src.modules.routers.bedrock import bedrock_router
+from src.modules.routers.openai import openai_router
+from src.modules.routers.sagemaker import sgmaker_router
 from src.modules.common import RequestException
 from src.modules.logger import log_request
 
@@ -26,12 +28,26 @@ try:
 except FileNotFoundError:
     VERSION = "error"
 
-tags_metadata = [
-    {
-        "name": "ChatGPT",
-        "description": "Operations related to Chatting with chat-gpt.",
-    },
-]
+tags_metadata = []
+# Add items in alphabetical order
+if BEDROCK in LLM_TYPE:
+    tags_metadata.append({
+        "name": "Bedrock",
+        "description": "Operations related to AWS Bedrock-based models.",
+    })
+if OPEN_AI in LLM_TYPE:
+    tags_metadata.append({
+        "name": "OpenAI",
+        "description": "Operations related to OpenAI-based models.",
+    })
+if SAGEMAKER in LLM_TYPE:
+    tags_metadata.append({
+        "name": "Sagemaker",
+        "description": "Operations related to AWS Sagemaker-based models.",
+    })
+
+
+    
 
 app = FastAPI(
     title="LLM Gateway",
@@ -81,8 +97,11 @@ def ping():
     """
     return 200
 
+# Add routers in alphabetical order
+app.include_router(bedrock_router)
+app.include_router(openai_router)
+app.include_router(sgmaker_router)
 
-app.include_router(chat_router)
 
 
 def read(rel_path):

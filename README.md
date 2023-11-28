@@ -154,8 +154,16 @@ The attached power bi report in [./example-powerbi-report/llm-logs-demo.pbix](/e
 ### Instructions to view the power report
 1. Run this repo following the [Full Stack](#full-stack) or [Backend Only](#backend-only) instructions
 2. Connect to the postgres docker container
-```
+``` sql
 psql -h 127.0.0.1 -p 5432 -U fastapi_traefik
 ```
+
+If using a desktop application such as DataGrip, use localhost as the connection host string:
+| **Field** | Value |
+| ----- | ----- |
+| Host  | localhost |
+| User & Password & Database  | fastapi_traefik |
+| Port | 5432 |
+
 3. Copy and paste the sql insert statements in [./example-powerbi-report/llm-logs-demo-logs.sql](/example-powerbi-report/llm-logs-demo-logs.sql) and run in the psql client.
 4. When the inserts are done, go to your powerbi desktop app, and import the pbix file at [./example-powerbi-report/llm-logs-demo.pbix](/example-powerbi-report/llm-logs-demo.pbix)
