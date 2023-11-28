@@ -1,0 +1,77 @@
+# This docker-compose file starts up the api, chat client, and a docker postgres container
+
+version: '3.8'
+
+services:
+  api:
+    container_name: llm-gateway-api
+    build: ./backend/
+    command: bash -c 'cd ./backend; uvicorn src.app:app --host 0.0.0.0'
+    volumes:
+      - .:/app
+    ports:
+      - 8000:8000
+    environment:
+      # General Config
+      - DATABASE_URL=postgresql://fastapi_traefik:fastapi_traefik@db:5432/fastapi_traefik
+      - LLM_API_CONTENT_TYPE=application/json
+      # Open AI Config / Sagemaker URL
+      - LLM_ENDPOINT=https://api.openai.com/v1/chat/completions # LLM endpoint you want to proxy to
+      - LLM_IMG_ENDPOINT=https://api.openai.com/v1/images/generations # Another llm endpoint you want to proxy to
+      - LLM_API_AUTHORIZATION=Bearer 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 #[LLM TOKEN/API KEY HERE. E,g. Bearer sk-asda...]
+      # Submissions Monitoring Config
+      - ENABLE_SUBMISSIONS_API=false # True of an API is enabled to send logs to eSentire
+      - SUBMISSIONS_API_URL=[SUBMISSIONS URL PROVIDED IF CONFIGURED] # The URL provided by eSentire if llm log submissions is enabled
+      # LLM Service Options
+      - LLM_TYPE= [OPEN_AI, SAGEMAKER] #[BEDROCK, OPEN_AI, SAGEMAKER] # Pass a list of which llm services to use. Supported services in this repo include: [OPEN_AI, SAGEMAKER, BEDROCK]
+      # Bedrock Config
+      - BEDROCK_ASSUMED_ROLE=arn:aws:iam::833312077753:role/BedrockFullECRole # [ROLE ARN] # If using bedrock, optional ARN of an AWS IAM role to assume for calling the Bedrock service. If not specified, the current active credentials will be used.
+      - AWS_REGION=us-west-2 # [AWS REGION] # Optional name of the AWS Region in which the service should be called (e.g. "us-east-1"). If not specified, AWS_REGION or AWS_DEFAULT_REGION environment variable will be used.
+      - MODEL_ID=ai21.j2-mid-v1 # https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
+    networks:
+      - llm-demo
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    container_name: llm-gateway-db
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=fastapi_traefik
+      - POSTGRES_PASSWORD=fastapi_traefik
+      - POSTGRES_DB=fastapi_traefik
+    networks:
+      - llm-demo
+    healthcheck: # This health check is necessary so that we can accurately determin that the service is ready before starting the api
+      test: ["CMD-SHELL", "pg_isready -U fastapi_traefik"] 
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  frontend:
+    container_name: llm-gateway-chat
+    build: 
+      context: ./frontend/ 
+      args:
+        - LLM_TYPE=SAGEMAKER    
+        - BEDROCK_MODEL_ID=ai21.j2-mid-v1
+    environment:
+      - LLM_GATEWAY_URL=http://llm-gateway-api:8000 # Replace this with your internal LLM Gateway Proxy url. This default value is currently pointing to the backend api docker container
+    networks: 
+      - llm-demo
+    ports:
+      - 3000:3000
+    depends_on:
+      - api
+
+
+volumes:
+  postgres_data:
+
+networks:
+  llm-demo: 
