@@ -265,9 +265,6 @@ function App() {
         }
       }
     }
-    console.log("Elisasays Hi")
-    console.log(data)
-    console.log("curCount: ", curAttemptCount)
     console.log("messages: ", messages)
     axios
       .post(endpoint, data, { headers })
