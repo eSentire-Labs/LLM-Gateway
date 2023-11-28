@@ -60,13 +60,13 @@ app.post('/chat', async (req, res) => {
 })
 
 //chat endpoint for interacting with the API_URL
-app.post('/chat_br', async (req, res) => {
+app.post('/chat_br_langchain', async (req, res) => {
   try {
     const headers = {
       'Content-Type': 'application/json'
     };
     const response = await axios.post(
-      API_URL.concat("/chat_br"),
+      API_URL.concat("/chat_br_langchain"),
       req.body,
       {
         headers,

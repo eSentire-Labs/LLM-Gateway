@@ -42,7 +42,7 @@ function App() {
     if (LLM_TYPE === "OPENAI") {
       setEndpoint("/chat")
     } else if (LLM_TYPE === "BEDROCK") {
-      setEndpoint("/chat_br")
+      setEndpoint("/chat_br_langchain")
     } else if (LLM_TYPE === "SAGEMAKER") {
       setEndpoint("/chat_sg")
     } else {
@@ -275,7 +275,7 @@ function App() {
           setCurrentRootID(response.data.id)
         }
         if (LLM_TYPE === "BEDROCK") {
-          replyObj = response.data.completions[0].data.text
+          replyObj = response.data //response.data.completions[0].data.text
 
         } else if (LLM_TYPE === "OPENAI") {
           

@@ -92,6 +92,4 @@ Note that each environment varible is follwed with either "api" or "frontend" se
 | BEDROCK_MODEL_ID (frontend service | This field is also set to "ai21.j2-mid-v1" by default because it is the model used in this tutorial. If you modify the model id, you will likely need to modify both frontend and backend code to correctly structure and parse your api body. |
 
 :star: Notes
-This example of a bedrock generative llm exchange does not retain context of prior messages unlike the sagemaker and openai chats.
-
-However, you could modify the code to leverage Langchain to retain context of the prior messages. An example of this is available at this repo: https://github.com/aws-samples/amazon-bedrock-workshop/blob/main/04_Chatbot/00_Chatbot_AI21.ipynb 
+See additional bedrock examples at https://github.com/aws-samples/amazon-bedrock-workshop/blob/main/04_Chatbot/00_Chatbot_AI21.ipynb 

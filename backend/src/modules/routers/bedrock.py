@@ -18,6 +18,9 @@ import boto3
 import botocore
 from botocore.config import Config
 from fastapi import Depends, APIRouter
+from langchain.chains import ConversationChain
+from langchain.llms.bedrock import Bedrock
+from langchain.memory import ConversationBufferMemory
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 
@@ -110,6 +113,18 @@ bedrock_router = APIRouter()
 # Only display this endpoint if sagemaker is enabled
 if BEDROCK in LLM_TYPE:
 
+    bedrock_runtime = get_bedrock_client(
+        assumed_role=BEDROCK_ASSUMED_ROLE,
+        region=AWS_REGION
+    )
+
+    ai21_llm = Bedrock(model_id=MODEL_ID, client=bedrock_runtime)
+    memory = ConversationBufferMemory()
+    conversation = ConversationChain(
+        llm=ai21_llm, verbose=True, memory=memory
+    )
+
+
     # LLM endpoints proxied to in this API
     @bedrock_router.post(
         "/chat_br",
@@ -121,7 +136,7 @@ if BEDROCK in LLM_TYPE:
         db_engine: Session = Depends(get_db),
     ):
         """
-        This is the primary endpoint used to send that proxies business user interactions to an LLM.
+        This is an endpoint to interact with a bedrock llm model.
         """
         # pylint: disable=protected-access
         json_object = json_object.dict(exclude_unset=True)
@@ -151,21 +166,17 @@ if BEDROCK in LLM_TYPE:
 
         logger.info("uuid: %s", uuid_generated)
         logger.info("convo_title: %s", convo_title)
-        
-
-        bedrock_runtime = get_bedrock_client(
-            assumed_role=BEDROCK_ASSUMED_ROLE,
-            region=AWS_REGION
-        )
-
-        
+                
         try:
             time_submitted = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
             
             body = json.dumps(json_object)
+            logger.info("body: %s", body)
             response = bedrock_runtime.invoke_model(
                 body=body, modelId=modelId, accept=CONTENT_TYPE, contentType=CONTENT_TYPE
             )
+            
+            logger.info("response: %s", response)
             response_body = json.loads(response.get("body").read())
 
             prompt_response = response_body.get("completions")[0].get("data").get("text")
@@ -216,3 +227,105 @@ if BEDROCK in LLM_TYPE:
                 
         # # Return the generated text as a response to the client
         return response_body
+
+    @bedrock_router.post(
+        "/chat_br_langchain",
+        tags=["Bedrock"],
+        responses={200: chat_success, 400: unknown_error, 500: dns_error, 403: scope_error},
+    )
+    async def submit_chat_br_langchain(
+        json_object: ChatBedrockJson,
+        db_engine: Session = Depends(get_db),
+    ):
+        """
+        This is the primary endpoint specifically to retain conversation context in a chatbox using bedrock.
+        Excerpts of the code came from the Notebook shared here: https://github.com/aws-samples/amazon-bedrock-workshop/blob/main/04_Chatbot/00_Chatbot_AI21.ipynb
+        """
+        # pylint: disable=protected-access
+        json_object = json_object.dict(exclude_unset=True)
+        
+        modelId = json_object.pop("modelId")
+
+        logger.info("json_object: %s", json_object)
+
+        # This generates a uuid to track each record in the db
+        while True:
+            uuid_generated = uuid.uuid4()
+            if uuid_exists(uuid_generated, db_engine):
+                continue
+            break
+
+        # Extract the convo_title if passed alongside request, so we don't pass downstream to llm, since this is an internal field
+        convo_title=""
+        if "convo_title" in json_object:
+            convo_title = json_object.pop("convo_title")
+        else:
+            convo_title = json_object["prompt"][:50]
+
+        # Extract the root_id if passed alongside request, so we don't pass downstream to llm, since this is an internal field
+        gpt_root_id= None
+        if "root_id" in json_object:
+            gpt_root_id = json_object.pop("root_id")
+
+        logger.info("uuid: %s", uuid_generated)
+        logger.info("convo_title: %s", convo_title)
+        
+        
+        try:
+            time_submitted = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+            
+            prompt = json_object["prompt"]
+            logger.info("body: %s", prompt)
+            
+            response = conversation.predict(input=prompt)
+            logger.info("response: %s", response)
+
+        except ValueError as error:
+            if  "AccessDeniedException" in str(error):
+                print(f"\x1b[41m{error}\
+                \nTo troubeshoot this issue please refer to the following resources.\
+                \nhttps://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_access-denied.html\
+                \nhttps://docs.aws.amazon.com/bedrock/latest/userguide/security-iam.html\x1b[0m\n")      
+                class StopExecution(ValueError):
+                    def _render_traceback_(self):
+                        pass
+                raise StopExecution        
+            else:
+                raise error
+
+
+        logger.info("Configuration of request: %s", json_object)
+        logger.info("Response: %s", response)# prompt_response)
+
+        chat_log = ChatgptLog(
+            id=uuid_generated,
+            request=json.dumps(json_object), 
+            response=response, 
+            # no usage_info
+            # usage_info=json.dumps(response_body["prompt"]["tokens"]),
+            user_name = "user", # Replace with the actual username of whomever sent the request using whichever IAM tools you prefer
+            title = "tile", # Replace with user job title-- this is an example of additional metadata that might be useful to capture, or to use in your dashboards to create interesting job role based reports
+            convo_title=convo_title, # This is used in the chat history feature so users can quickly get an idea of prior conversation content
+            root_gpt_id= "1" # This is used to draw a lineage between different interactions so we can trace a single conversation
+        )
+
+        # Store this primary
+        db_engine.add(chat_log)
+        db_engine.commit()
+
+        if ENABLE_SUBM_API=="true":
+            try:
+                print("logging to esentire")
+                esentire_response = log_to_esentire(
+                    raw_request=json_object["prompt"],
+                    raw_response=prompt_response,
+                    associated_users= ["example_user_id"],
+                    time_submitted= time_submitted,
+                    associated_devices= ["device1, device2"],
+                    associated_software= ["software1","software2"]
+                    )
+            except Exception as error:
+                print("Error logging to esentire in submit_chat: {error}")
+                
+        # # Return the generated text as a response to the client
+        return response
