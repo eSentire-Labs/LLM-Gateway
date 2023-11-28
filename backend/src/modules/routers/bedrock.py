@@ -2,7 +2,7 @@
 """
 This is the primary FastAPI router where LLM endpoints are proxied and monitored.
 
-This is a barebones sagemaker POC and further development is required to use.
+This is a barebones bedrock POC and further development is required to use.
 
 """
 # pylint: disable=too-many-locals,too-many-arguments,dangerous-default-value
