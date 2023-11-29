@@ -91,5 +91,13 @@ Note that each environment varible is follwed with either "api" or "frontend" se
 | LLM_TYPE (frontend service) | Make sure this is set to "BEDROCK" to enable the frontend chat client to make calls to the BEDROCK api backend. |
 | BEDROCK_MODEL_ID (frontend service | This field is also set to "ai21.j2-mid-v1" by default because it is the model used in this tutorial. If you modify the model id, you will likely need to modify both frontend and backend code to correctly structure and parse your api body. |
 
+
+### Run the App
+1. Authenticate to your aws account where the bedrock model is enabled, using awscli or whichever tool you use.
+2. In the parent directory of this repo run:
+```
+docker-compose up --build 
+```
+
 :star: Notes
 See additional bedrock examples at https://github.com/aws-samples/amazon-bedrock-workshop/blob/main/04_Chatbot/00_Chatbot_AI21.ipynb 
